@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+*.xcf
+.DS_Store
+test_images/
+output/

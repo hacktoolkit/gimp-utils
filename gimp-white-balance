@@ -1,0 +1,89 @@
+#!/bin/bash
+# GIMP White Balance - Apply auto white balance to images
+# Usage: gimp-white-balance INPUT_DIR OUTPUT_DIR [PATTERN]
+
+set -e
+
+# Show help if insufficient args
+if [ $# -lt 2 ]; then
+    cat <<EOF
+Usage: gimp-white-balance INPUT_DIR OUTPUT_DIR [PATTERN]
+
+Apply auto white balance (Colors > Auto > White Balance) to all images
+in INPUT_DIR and save results to OUTPUT_DIR.
+
+Arguments:
+  INPUT_DIR   Directory containing source images
+  OUTPUT_DIR  Directory where processed images will be saved
+  PATTERN     File pattern to match (default: *.jpg)
+
+Examples:
+  gimp-white-balance ./photos ./processed
+  gimp-white-balance ./photos ./processed "*.png"
+
+EOF
+    exit 1
+fi
+
+INPUT_DIR="$1"
+OUTPUT_DIR="$2"
+PATTERN="${3:-*.JPG}"
+
+# Validate input directory exists
+if [ ! -d "$INPUT_DIR" ]; then
+    echo "Error: Input directory '$INPUT_DIR' does not exist"
+    exit 1
+fi
+
+# Create output directory if needed
+mkdir -p "$OUTPUT_DIR"
+
+# Get absolute paths
+INPUT_DIR=$(cd "$INPUT_DIR" && pwd)
+OUTPUT_DIR=$(cd "$OUTPUT_DIR" && pwd)
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Find all matching files and process each one
+shopt -s nullglob  # Don't fail if no files match
+FILES=("$INPUT_DIR"/$PATTERN)
+FILE_COUNT=${#FILES[@]}
+
+if [ $FILE_COUNT -eq 0 ]; then
+    echo "No files matching pattern '$PATTERN' found in $INPUT_DIR"
+    exit 1
+fi
+
+echo "Found $FILE_COUNT files to process"
+
+# Process each file
+for filepath in "${FILES[@]}"; do
+    filename=$(basename "$filepath")
+    output_path="$OUTPUT_DIR/$filename"
+
+    echo "Processing: $filename"
+
+    # Run GIMP in headless mode for this single file
+    # GIMP 3.0 changes: pass ONE filename, not two; use vector of drawables; use --quit
+    /Applications/GIMP.app/Contents/MacOS/gimp-console \
+        -i \
+        --batch-interpreter plug-in-script-fu-eval \
+        -b "(script-fu-use-v3) \
+             (let* ((image (gimp-file-load RUN-NONINTERACTIVE \"$filepath\")) \
+                    (layers (gimp-image-get-layers image)) \
+                    (drawable (vector-ref layers 0))) \
+               (gimp-drawable-levels-stretch drawable) \
+               (gimp-image-flatten image) \
+               (gimp-file-save RUN-NONINTERACTIVE image \"$output_path\"))" \
+        --quit 2>&1 | grep -v "^GIMP" | grep -v "^$" || true
+
+    if [ -f "$output_path" ]; then
+        echo "  ✓ Saved: $filename"
+    else
+        echo "  ✗ Failed: $filename"
+    fi
+done
+
+echo ""
+echo "Processing complete. Results saved to: $OUTPUT_DIR"
