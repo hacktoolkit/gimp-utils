@@ -34,6 +34,25 @@ export PATH="$PATH:$HOME/code/gimp-utils"
 
 Apply auto white balance (Colors > Auto > White Balance) to images in batch.
 
+**Before & After Examples:**
+
+*Example images courtesy of [@SkilletzCafe](https://github.com/SkilletzCafe)*
+
+<table>
+<tr>
+<td><b>Before (Raw)</b></td>
+<td><b>After (White Balanced)</b></td>
+</tr>
+<tr>
+<td><img src="https://raw.githubusercontent.com/hacktoolkit/gimp-utils/master/examples/white-balance/tearekz_boba_sundae_raw.jpg" width="400" alt="Boba sundae before white balance"></td>
+<td><img src="https://raw.githubusercontent.com/hacktoolkit/gimp-utils/master/examples/white-balance/tearekz_boba_sundae_white_balanced.jpg" width="400" alt="Boba sundae after white balance"></td>
+</tr>
+<tr>
+<td><img src="https://raw.githubusercontent.com/hacktoolkit/gimp-utils/master/examples/white-balance/tearekz_dalgona_raw.jpg" width="400" alt="Dalgona before white balance"></td>
+<td><img src="https://raw.githubusercontent.com/hacktoolkit/gimp-utils/master/examples/white-balance/tearekz_dalgona_white_balanced.jpg" width="400" alt="Dalgona after white balance"></td>
+</tr>
+</table>
+
 **Usage:**
 ```bash
 gimp-white-balance INPUT_DIR OUTPUT_DIR [PATTERN]
